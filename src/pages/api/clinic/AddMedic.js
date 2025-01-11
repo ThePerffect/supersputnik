@@ -4,7 +4,6 @@ export default async function handler(req, res) {
     }
 
     try {
-        console.log("Request body:", req.body); // Логируем входящие данные
 
         const { id, spec, name, lastname, middlename, date } = req.body;
 
@@ -12,15 +11,14 @@ export default async function handler(req, res) {
             return res.status(400).json({ error: "Missing required fields." });
         }
 
-        // Добавление в базу данных
         const newMedic = await prisma.medics.create({
             data: {
-                clinicId: id,
-                profession: spec,
-                firstName: name,
-                lastName: lastname,
-                middleName: middlename || null,
-                birthDate: new Date(date),
+                cid: id,
+                prof: spec,
+                MfirstName: name,
+                MlastName: lastname,
+                MmiddleName: middlename || null,
+                MbirthDate: new Date(date)
             },
         });
 

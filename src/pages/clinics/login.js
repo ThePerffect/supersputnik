@@ -26,13 +26,15 @@ export default function ClinicLogin() {
 
             if (result.error) {
                 setError(result.error);
+            }else{
+                showNotification("Успешная авторизация!", "success");
+                await router.push('/clinics/profile') ;
             }
         } catch (error) {
             setError('Произошла ошибка. Попробуйте снова.');
         } finally {
             setLoading(false);
-            showNotification("Успешная авторизация!", "success");
-            await router.push('/clinics/profile') ;
+
         }
 
 

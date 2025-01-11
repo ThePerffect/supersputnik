@@ -28,7 +28,7 @@ export default function HospitalProfile() {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [page, setPage] = useState(1);
-    const [medic, setMedic] = useState(null);
+    const [medic, setMedic] = useState([]);
     const [error, setError] = useState("");
 
     const [Mname, setMname] = useState("");
@@ -47,6 +47,9 @@ export default function HospitalProfile() {
         if (user.type !== 'clinic') {
             router.push('/');
             return;
+        }
+        if (page === 2) {
+            fetchMedics();
         }
         setId(user.id)
         setName(user.name || '');
@@ -78,6 +81,20 @@ export default function HospitalProfile() {
             .replace(/(\d{1})(\d{3})(\d{3})(\d{2})(\d{2})/, '$1 ($2)-$3-$4-$5');
 
         setPhone(formattedValue);
+    };
+
+    const fetchMedics = async () => {
+        try {
+            const response = await fetch(`/api/clinic/GetMedics?id=${id}`);
+            if (!response.ok) {
+                throw new Error('Не удалось загрузить сотрудников.');
+            }
+            const data = await response.json();
+            setMedic(data.medics);
+            console.log(medic)
+        } catch (error) {
+            console.error(error.message);
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -147,18 +164,19 @@ export default function HospitalProfile() {
                     'Content-Type': 'application/json', // Обязательный заголовок
                 },
                 body: JSON.stringify({
-                    id: 1,
-                    spec: "Хирург",
-                    name: "sdfd",
-                    lastname: "sdfsdf",
-                    middlename: "sdfs",
-                    date: "2000-02-20T00:00:00.000Z",
+                    id: id,
+                    spec: specialization,
+                    name: Mname,
+                    lastname: Mlastname,
+                    middlename: Mmiddlename,
+                    date: Mdata,
                 }),
             });
 
             if (response.ok) {
                 const data = await response.json();
                 console.log('Успешно добавлено:', data);
+                await fetchMedics();
             } else {
                 const error = await response.json();
                 console.error('Ошибка:', error.error || 'Неизвестная ошибка.');
@@ -343,8 +361,8 @@ export default function HospitalProfile() {
                         </form>
                     </div>
                 ) : page === 2 ? (
-                    <div className="grid grid-cols-4">
-                        <div className=" mt-20 col-span-2 bg-white p-6 rounded-lg ">
+                    <div className="grid grid-cols-4 ">
+                        <div className=" mt-20 col-span-2  bg-white p-6 rounded-lg ">
                             <h2 className="text-2xl font-semibold text-gray-700 mb-6">Добавить сотрудника</h2>
                             <form>
                                 <div>
@@ -378,17 +396,18 @@ export default function HospitalProfile() {
 
                                         className="mt-1 text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     />
-                                <div className='mt-3 text-gray-800'>
-                                    <InputField id="birthDate" label="Дата рождения" type="date" onChange={setBirthDate} />
-                                </div>
-                                <div className='mt-3'>
-                                    <SpecializationInput onSpecializationChange={setSpecialization}/>
-                                </div>
+                                    <div className='mt-3 text-gray-800'>
+                                        <InputField id="birthDate" label="Дата рождения" type="date"
+                                                    onChange={setBirthDate}/>
+                                    </div>
+                                    <div className='mt-3'>
+                                        <SpecializationInput onSpecializationChange={setSpecialization}/>
+                                    </div>
 
                                     <button
                                         type="button"
                                         className="flex mt-3 justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                                        disabled={ !specialization || !Mdata || !Mmiddlename || !Mlastname || !Mname}
+                                        disabled={!specialization || !Mdata || !Mmiddlename || !Mlastname || !Mname}
                                         onClick={handleAddMedic}
                                     >
                                         Добавить сотрудника
@@ -399,10 +418,32 @@ export default function HospitalProfile() {
                         </div>
 
 
-                        <div className='flex flex-col bg-white p-8 rounded-lg w-[80%] '>
-                            <h1 className="text-3xl font-semibold text-gray-800 mb-6">Сотрудники</h1>
+                        <div className="bg-white col-start-1 col-span-10 text-gray-800 p-8 rounded-lg w-[80%]">
+                            <h1 className="text-3xl font-semibold mb-6">Сотрудники</h1>
 
+                            {medic && medic.length > 0 ? (
+                                <ul className="grid grid-cols-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                    {medic.map((medicItem) => (
+                                        <li
+                                            key={medicItem.id}
+                                            className="p-4 border rounded-md shadow-sm bg-gray-50"
+                                        >
+                                            <p>
+                                                <strong>Имя:</strong> {medicItem.MlastName} {medicItem.MfirstName} {medicItem.MmiddleName || ''}
+                                            </p>
+                                            <p><strong>Специализация:</strong> {medicItem.prof}</p>
+                                            <p><strong>Дата
+                                                рождения:</strong> {new Date(medicItem.MbirthDate).toLocaleDateString()}
+                                            </p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500">Нет данных о сотрудниках.</p>
+                            )}
                         </div>
+
+
                     </div>
                 ) : null}
             </div>

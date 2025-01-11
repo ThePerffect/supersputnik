@@ -22,11 +22,12 @@ model User {
 
 model Medics {
   id          Int     @id @default(autoincrement())
-  clinicId    Int
-  profession  String
-  firstName     String
-  lastName      String
-  middleName    String
+  cid    Int
+  prof  String
+  MfirstName     String
+  MlastName      String
+  MmiddleName    String
+  MbirthDate     DateTime
 }
 
 model Hospital {

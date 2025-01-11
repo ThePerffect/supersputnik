@@ -15,12 +15,12 @@ export default async function handler(req, res) {
     try {
         const professions = await prisma.medics.findMany({
             select: {
-                profession: true,
+                prof: true,
             },
-            distinct: ['profession'],
+            distinct: ['prof'],
         });
 
-        const professionList = professions.map((medic) => medic.profession);
+        const professionList = professions.map((medic) => medic.prof);
 
         const combinedList = [...new Set([...professionList, ...specializations])];
         res.status(200).json(combinedList);
