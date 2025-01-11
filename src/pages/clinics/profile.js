@@ -1,12 +1,13 @@
 'use client';
 import { useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '@/app/globals.css';
 import Header from '../../components/ui/Header';
 import AddressInputWithMap from '../../components/ui/AddressInputWithMap';
 import {useNotification} from "@/components/ui/Message";
-import CheckMedic from "@/pages/api/Check-medic";
+import SpecializationInput from "@/components/ui/SpecializationInput";
+import InputField from "@/components/ui/InputField";
 
 
 export default function HospitalProfile() {
@@ -15,12 +16,13 @@ export default function HospitalProfile() {
     const [uniqueCode, setUniqueCode] = useState("");
     const [specialization, setSpecialization] = useState("");
     const [user, setUser] = useState(null);
-    const { showNotification } = useNotification();
+    const {showNotification } = useNotification();
     const [name, setName] = useState('');
     const [licens, setLicens] = useState('');
     const [address, setAddress] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [id, setId] = useState('');
     const [cordAddress, setCordAddress] = useState([]);
     const [type, setType] = useState('');
     const [email, setEmail] = useState('');
@@ -28,7 +30,12 @@ export default function HospitalProfile() {
     const [page, setPage] = useState(1);
     const [medic, setMedic] = useState(null);
     const [error, setError] = useState("");
-    const [customSpecialization, setCustomSpecialization] = useState("");
+
+    const [Mname, setMname] = useState("");
+    const [Mlastname, setMlastname] = useState("");
+    const [Mmiddlename, setMmiddlename] = useState("");
+    const [Mdata, setBirthDate] = useState("");
+
     const [success, setSuccess] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -41,7 +48,7 @@ export default function HospitalProfile() {
             router.push('/');
             return;
         }
-
+        setId(user.id)
         setName(user.name || '');
         setLicens(user.licens || '');
         setAddress(user.address || '');
@@ -130,41 +137,38 @@ export default function HospitalProfile() {
         }
     };
 
-    const handleUniqueCodeChange = async (e) => {
-        const value = e.target.value.trim(); // Убираем лишние пробелы
-        setUniqueCode(value);
 
-        if (value === "") {
-            setMedic(null);
-            setError("");
-            return;
-        }
 
+    const handleAddMedic = async () => {
         try {
-            const response = await fetch(`/api/Check-medic?uniqueCode=${encodeURIComponent(value)}`, {
-                method: "GET",
+            const response = await fetch('/api/clinic/AddMedic', {
+                method: 'POST',
                 headers: {
-                    "Content-Type": "application/json",
+                    'Content-Type': 'application/json', // Обязательный заголовок
                 },
+                body: JSON.stringify({
+                    id: 1,
+                    spec: "Хирург",
+                    name: "sdfd",
+                    lastname: "sdfsdf",
+                    middlename: "sdfs",
+                    date: "2000-02-20T00:00:00.000Z",
+                }),
             });
 
             if (response.ok) {
-                const foundMedic = await response.json();
-                setMedic(foundMedic);
-                setError("");
-            } else if (response.status === 404) {
-                setMedic(null);
-                setError("Сотрудник с таким кодом не найден.");
+                const data = await response.json();
+                console.log('Успешно добавлено:', data);
             } else {
-                const errorMessage = await response.text();
-                throw new Error(errorMessage || "Неожиданная ошибка");
+                const error = await response.json();
+                console.error('Ошибка:', error.error || 'Неизвестная ошибка.');
             }
         } catch (err) {
-            console.error("Error checking medic:", err);
-            setMedic(null);
-            setError("Произошла ошибка при проверке сотрудника.");
+            console.error('Ошибка при добавлении:', err.message);
         }
     };
+
+
 
 
     return (
@@ -297,7 +301,7 @@ export default function HospitalProfile() {
                                     type="text"
                                     value={phone}
                                     placeholder="+7 XXX XXX XX XX"
-                                    maxLength={16} // Max length for formatted phone number with spaces
+                                    maxLength={16}
                                     onChange={handlePhoneChange}
                                     className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                 />
@@ -339,75 +343,66 @@ export default function HospitalProfile() {
                         </form>
                     </div>
                 ) : page === 2 ? (
-                    <div className="flex flex-col bg-white p-8 rounded-lg mt-20 w-[80%] mx-auto">
-                        <h1 className="text-3xl font-semibold text-gray-800 mb-6">Добавление сотрудника</h1>
+                    <div className="grid grid-cols-4">
+                        <div className=" mt-20 col-span-2 bg-white p-6 rounded-lg ">
+                            <h2 className="text-2xl font-semibold text-gray-700 mb-6">Добавить сотрудника</h2>
+                            <form>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Имя</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Введите имя"
+                                        onChange={(e) => setMname(e.target.value)}
+                                        className="mt-1 text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    />
+                                </div>
 
-                        <form className="space-y-6 text-gray-800">
-                            <div>
-                                <label htmlFor="unique-code" className="block text-sm font-medium text-gray-700">Уникальный
-                                    код сотрудника</label>
-                                <input
-                                    id="unique-code"
-                                    type="text"
-                                    placeholder="Введите код"
-                                    value={uniqueCode}
-                                    onChange={handleUniqueCodeChange}
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                />
-                            </div>
+                                <div className='mt-3'>
+                                    <label className="block text-sm font-medium text-gray-700">Фамилия</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Введите фамилию"
+                                        onChange={(e) => setMlastname(e.target.value)}
 
-                            <div>
-                                <label
-                                    htmlFor="specialization"
-                                    className="block text-sm font-medium text-gray-700"
-                                >
-                                    Специализация
-                                </label>
-                                <select
-                                    id="specialization"
-                                    value={specialization}
-                                    onChange={(e) => setSpecialization(e.target.value)}
-                                    className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                >
-                                    <option value="" disabled>
-                                        Выберите специализацию
-                                    </option>
-                                    <option value="therapist">Терапевт</option>
-                                    <option value="surgeon">Хирург</option>
-                                    <option value="pediatrician">Педиатр</option>
-                                    <option value="dentist">Стоматолог</option>
-                                    <option value="other">Другое</option>
-                                </select>
-
-                                {specialization === "other" && (
-                                    <div className="mt-2">
-                                        <label
-                                            htmlFor="customSpecialization"
-                                            className="block text-sm font-medium text-gray-700"
-                                        >
-                                            Укажите свою специализацию
-                                        </label>
-                                        <input
-                                            type="text"
-                                            id="customSpecialization"
-                                            value={customSpecialization}
-                                            onChange={(e) => setCustomSpecialization(e.target.value)}
-                                            className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                            placeholder="Введите свою специализацию"
-                                        />
-                                    </div>
-                                )}
-                            </div>
+                                        className="mt-1 text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    />
+                                </div>
 
 
-                            <button
-                                type="button"
-                                className="flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                                disabled={!uniqueCode || !specialization || !user}
-                            >
-                                Добавить сотрудника
-                            </button>
-                        </form>
+                                <div className='mt-3'>
+                                    <label className="block text-sm font-medium text-gray-700">Отчество</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Введите отчество"
+                                        onChange={(e) => setMmiddlename(e.target.value)}
+
+                                        className="mt-1 text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    />
+                                <div className='mt-3 text-gray-800'>
+                                    <InputField id="birthDate" label="Дата рождения" type="date" onChange={setBirthDate} />
+                                </div>
+                                <div className='mt-3'>
+                                    <SpecializationInput onSpecializationChange={setSpecialization}/>
+                                </div>
+
+                                    <button
+                                        type="button"
+                                        className="flex mt-3 justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                                        disabled={ !specialization || !Mdata || !Mmiddlename || !Mlastname || !Mname}
+                                        onClick={handleAddMedic}
+                                    >
+                                        Добавить сотрудника
+                                    </button>
+                                </div>
+                            </form>
+
+                        </div>
+
+
+                        <div className='flex flex-col bg-white p-8 rounded-lg w-[80%] '>
+                            <h1 className="text-3xl font-semibold text-gray-800 mb-6">Сотрудники</h1>
+
+                        </div>
                     </div>
                 ) : null}
             </div>

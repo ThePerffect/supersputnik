@@ -22,10 +22,11 @@ model User {
 
 model Medics {
   id          Int     @id @default(autoincrement())
-  userId      Int     @unique
   clinicId    Int
   profession  String
-  about       String
+  firstName     String
+  lastName      String
+  middleName    String
 }
 
 model Hospital {
@@ -40,4 +41,5 @@ model Hospital {
   time      String
   phone     String
 }
+
 

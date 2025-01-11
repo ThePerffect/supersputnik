@@ -2,6 +2,7 @@ import { useState } from "react";
 import "@/app/globals.css";
 import { useRouter } from "next/navigation";
 import InputField from "@/components/ui/InputField";
+import {useNotification} from "@/components/ui/Message";
 
 export default function Registration() {
     const [firstName, setFirstName] = useState("");
@@ -14,6 +15,7 @@ export default function Registration() {
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");
     const router = useRouter();
+    const { showNotification } = useNotification();
 
     const validateBirthDate = (date) => {
         const today = new Date();
@@ -80,6 +82,8 @@ export default function Registration() {
             setPassword("");
             setConfirmPassword("");
             router.push("/login");
+            showNotification("Вы успешно зарегистрировались!", "success");
+
         } catch (err) {
             setError("Произошла ошибка. Попробуйте ещё раз.");
         }

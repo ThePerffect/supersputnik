@@ -2,12 +2,14 @@ import { useState } from 'react';
 import { signIn } from "next-auth/react"
 import {router} from "next/client";
 import "@/app/globals.css"
+import {useNotification} from "@/components/ui/Message";
 
 export default function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const { showNotification } = useNotification();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -26,6 +28,8 @@ export default function Login() {
                 setError(result.error);
             } else {
                 await router.push('/') ;
+                showNotification("Успешная авторизация!", "success");
+
             }
         } catch (error) {
             setError('An error occurred. Please try again.');

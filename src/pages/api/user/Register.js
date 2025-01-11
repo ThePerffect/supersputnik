@@ -14,7 +14,7 @@ const isUniqueCode = async (code) => {
     const existingUser = await prisma.user.findUnique({
         where: { unique_code: code },
     });
-    return existingUser === null; // если пользователь с таким кодом не найден
+    return existingUser === null; 
 };
 
 const generateUniqueCode = async () => {
@@ -40,7 +40,6 @@ export default async function handler(req, res) {
     if (!firstName || !lastName || !birthDate || !email || !password) {
         return res.status(400).json({ message: "Все обязательные поля должны быть заполнены" });
     }
-
     try {
         const existingUser = await prisma.user.findUnique({
             where: { email },
@@ -53,7 +52,6 @@ export default async function handler(req, res) {
         const passwordHash = await hash(password, 10);
 
         const uniqueUuid = await generateUniqueCode();
-        console.log(uniqueUuid)
         const newUser = await prisma.user.create({
             data: {
                 firstName,

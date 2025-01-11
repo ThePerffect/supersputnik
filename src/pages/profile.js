@@ -18,6 +18,9 @@ export default function Profile() {
     const [page, setPage] = useState(1);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [uuid, setUUID] = useState('');
+    const [invitations, setInvitations] = useState([]);
+
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const validateBirthDate = (date) => {
@@ -56,7 +59,32 @@ export default function Profile() {
         setMiddleName(user.middleName || '');
         setBirthDate(user.birthDate || '');
         setEmail(user.email || '');
+        setUUID(user.unique_code)
     }, [session]);
+
+    useEffect(() => {
+        let intervalId;
+
+        if (page === 2 && uuid) {
+            const fetchData = async () => {
+                try {
+                    const data = await fetchInvites(uuid);
+                    setInvitations(data);
+                } catch (error) {
+                    console.error('Ошибка при получении приглашений:', error);
+                }
+            };
+
+            fetchData();
+            intervalId = setInterval(fetchData, 10000);
+        }
+
+        return () => {
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+        };
+    }, [page, uuid]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -106,6 +134,30 @@ export default function Profile() {
             setIsSubmitting(false);
         }
     };
+
+    const fetchInvites = async (uuid) => {
+        try {
+            if (!uuid) {
+                throw new Error('UUID is required');
+            }
+            const response = await fetch(`/api/user/Invites?uuid=${uuid}`);
+            if (!response.ok) {
+                const text = await response.text();
+                throw new Error(`Failed to fetch invites: ${text}`);
+            }
+            const data = await response.json();
+            setInvitations(data);
+            console.log(data)
+            return data;
+        } catch (error) {
+            console.error('Error fetching invites:', error);
+            throw error;
+        }
+    };
+
+
+
+
     return (
         <div className="bg-white flex">
             <Header/>
@@ -278,7 +330,34 @@ export default function Profile() {
                 ) : page === 2 ? (
                 <div className="flex flex-col bg-white p-8 rounded-lg mt-20 w-[80%] mx-auto">
                     <h1 className="text-3xl font-semibold text-gray-800 mb-6">Работа</h1>
+                    <div className="flex flex-wrap gap-6 ">
+                        {invitations.map((invite) => (
+                            <div
+                                key={invite.id}
+                                className="text-gray-800 border border-gray-300 shadow-lg rounded-lg p-4 w-full sm:w-1/2 lg:w-1/3 xl:w-1/4 bg-white hover:shadow-xl transition-shadow duration-300"
+                            >
+                                <h1 className="text-xl">Приглашение от {invite.clinic} </h1>
+                                <div>
+                                    <strong>Профессия:</strong> {invite.proffession}</div>
+                                <div className="flex gap-2 mt-4">
+                                    <button
+                                        className="bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition duration-200"
+                                        onClick={() => handleAccept(invite.uuid)}
+                                    >
+                                        Принять
+                                    </button>
+                                    <button
+                                        className="bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition duration-200"
+                                        onClick={() => handleReject(invite.uuid)}
+                                    >
+                                        Отклонить
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 </div>
+
 
             ) : null}
             </div>

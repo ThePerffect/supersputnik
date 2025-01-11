@@ -5,6 +5,7 @@ import "@/app/globals.css";
 import { useRouter } from "next/navigation";
 import InputField from "@/components/ui/InputField";
 import AddressInputWithMap from "@/components/ui/AddressInputWithMap";
+import {useNotification} from "@/components/ui/Message";
 
 export default function ClinicRegistration() {
     const [clinicName, setClinicName] = useState("");
@@ -17,6 +18,7 @@ export default function ClinicRegistration() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const router = useRouter();
+    const { showNotification } = useNotification();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -51,7 +53,9 @@ export default function ClinicRegistration() {
 
 
             router.push("/clinics/login");
+            showNotification("Вы успешно зарегистрировались!", "success");
         } catch (err) {
+            showNotification("Произошла ошибка. Попробуйте ещё раз.", "error");
             setError("Произошла ошибка. Попробуйте ещё раз.");
         } finally {
             setLoading(false);
@@ -59,7 +63,7 @@ export default function ClinicRegistration() {
     };
 
     return (
-        <div className="flex justify-center items-center flex-col text-black h-screen bg-gray-100">
+        <div className="flex justify-center  bg- items-center flex-col text-black h-screen bg-gray-100">
             <title>WEB MED - Регистрация</title>
             <div className="flex">
                 <a
