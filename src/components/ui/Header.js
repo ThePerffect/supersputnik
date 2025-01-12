@@ -26,6 +26,7 @@ export default function Header() {
 
     const handleLogout = useCallback(async () => {
         await signOut({ callbackUrl: '/' });
+        localStorage.removeItem('currentPage');
     }, []);
 
     const goToProfileMed = useCallback(() => {

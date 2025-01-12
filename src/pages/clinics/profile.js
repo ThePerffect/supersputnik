@@ -13,9 +13,7 @@ import InputField from "@/components/ui/InputField";
 export default function HospitalProfile() {
     const { data: session, update } = useSession();
     const router = useRouter();
-    const [uniqueCode, setUniqueCode] = useState("");
     const [specialization, setSpecialization] = useState("");
-    const [user, setUser] = useState(null);
     const {showNotification } = useNotification();
     const [name, setName] = useState('');
     const [licens, setLicens] = useState('');
@@ -40,32 +38,42 @@ export default function HospitalProfile() {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        if (!session) return;
+        const fetchUserData = async () => {
+            if (!session) return;
 
-        const { user } = session;
+            const { user } = session;
 
-        if (user.type !== 'clinic') {
-            router.push('/');
-            return;
-        }
-        if (page === 2) {
+            if (user.type !== 'clinic') {
+                router.push('/');
+                return;
+            }
+
+            setId(user.id);
+            setName(user.name || '');
+            setLicens(user.licens || '');
+            setAddress(user.address || '');
+            setCordAddress(convertStringToCoords(user.coord));
+            setEmail(user.email || '');
+            setType(user.ctype);
+            setPhone(user.phone);
+
+            if (user.time) {
+                const [start, end] = user.time.split('-');
+                setStartTime(start);
+                setEndTime(end);
+            }
+
+
+            console.log(id)
+        };
+        fetchUserData();
+    }, [session]);
+
+    useEffect(() => {
+        if (id) {
             fetchMedics();
         }
-        setId(user.id)
-        setName(user.name || '');
-        setLicens(user.licens || '');
-        setAddress(user.address || '');
-        setCordAddress(convertStringToCoords(user.coord));
-        setEmail(user.email || '');
-        setType(user.ctype);
-        setPhone(user.phone)
-        if (user.time) {
-            const [start, end] = user.time.split('-');
-            setStartTime(start);
-            setEndTime(end );
-            console.log(start, end)
-        }
-    }, [session]);
+    }, [id]);
 
     const convertStringToCoords = (cordAddress) => {
 
@@ -91,11 +99,23 @@ export default function HospitalProfile() {
             }
             const data = await response.json();
             setMedic(data.medics);
-            console.log(medic)
         } catch (error) {
             console.error(error.message);
         }
     };
+    useEffect(() => {
+        const savedPage = localStorage.getItem('currentPage');
+        if (savedPage) {
+            setPage(parseInt(savedPage, 10));
+        }
+    }, []);
+
+    useEffect(() => {
+        localStorage.setItem('currentPage', page.toString());
+        if (page === 2) {
+            fetchMedics();
+        }
+    }, [page]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -185,7 +205,6 @@ export default function HospitalProfile() {
             console.error('Ошибка при добавлении:', err.message);
         }
     };
-
 
 
 
