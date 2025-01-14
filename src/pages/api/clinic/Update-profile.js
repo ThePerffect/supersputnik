@@ -6,9 +6,9 @@ export default async function handler(req, res) {
     }
 
 
-    const { id, name, address, cordAddress, email, phone, time, type } = req.body;
+    const { id, name, address, cordAddress, email, phone, time, htime, type } = req.body;
 
-    if (!id || !name || !address || !cordAddress || !email || !phone || !time || !type) {
+    if (!id || !name || !address || !cordAddress || !email || !phone || !time || !htime || !type) {
 
         return res.status(400).json({ message: 'Все поля обязательны для заполнения' });
     }
@@ -23,6 +23,7 @@ export default async function handler(req, res) {
                 cord_address: cordAddress,
                 type,
                 phone,
+                htime,
                 time,
             },
         });

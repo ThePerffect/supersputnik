@@ -1,46 +1,44 @@
-"use client"
+"use client";
 
-import {useState} from 'react';
-import {Building2, Clock, Stethoscope, Users} from "lucide-react";
+import { useState } from "react";
+import { Building2, Clock, Stethoscope, Users } from "lucide-react";
 import Header from "../components/ui/Header";
 import Image from "next/image";
 import HospitalCard from "@/components/ui/HospitalCard";
 import HospitalSkeleton from "@/components/ui/HospitalSkeleton";
 import AddressInputWithMap from "@/components/ui/AddressInputWithMap";
 
-
 export default function Home() {
     const [hospitals, setHospitals] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [specialization, setSpecialization] = useState("");
 
     const handleCoordinatesChange = async (coordinates) => {
-
-
         try {
             setLoading(true);
             setError("");
             setHospitals([]);
 
             const response = await fetch(
-                `/api/nearest-hospitals?lat=${coordinates[0]}&lng=${coordinates[1]}`
+                `/api/nearest-hospitals?lat=${coordinates[0]}&lng=${coordinates[1]}&specialization=${specialization}`
             );
 
             if (!response.ok) {
-                throw new Error('Не удалось загрузить больницы');
+                throw new Error("Не удалось загрузить больницы");
             }
 
             const data = await response.json();
 
             if (!Array.isArray(data.hospitals)) {
-                throw new Error('Некорректный формат ответа от сервера');
+                throw new Error("Некорректный формат ответа от сервера");
             }
 
-            const hospitalsWithTime = await Promise.all(data.hospitals.map(async (hospital) => {
-                const [hospitalLat, hospitalLng] = hospital.cord_address.split(',').map(Number);
-
-                return {...hospital};
-            }));
+            const hospitalsWithTime = await Promise.all(
+                data.hospitals.map(async (hospital) => {
+                    return { ...hospital };
+                })
+            );
 
             setHospitals(hospitalsWithTime);
         } catch (err) {
@@ -50,25 +48,36 @@ export default function Home() {
         }
     };
 
-    return (<>
+    const handleScroll = () => {
+        window.scrollTo({
+            top: 1300,
+            left: 0,
+            behavior: "smooth",
+        });
+    };
+
+    return (
+        <>
             <div className="bg-blue-100">
                 <Header/>
-
                 <div className="relative min-h-screen bg-white rounded-b-3xl shadow">
-                    <div className="absolute w-full h-full overflow-hidden">
-                        <div className="relative w-full h-full">
+                    <div className="absolute w-full h-full  overflow-hidden">
+                        <div className="relative  w-full h-full">
                             <div
-                                className="lg:block xl:block md:hidden sm:hidden sl:hidden  absolute top-[30%] right-[20%] to-[#75ddf6] from-[#0f94c2] bg-gradient-to-b w-[1100px] h-[1100px] rounded-full transform translate-x-1/2 -translate-y-1/2">
-                                <div className="relative">
-                                    <Image src={'/image_1.svg'} alt="Medical Innovation" loading='eager'
-                                           className="w-[73%] h-[70%] rounded-b-full mt-[35%] ml-[13%]" width='70'
-                                           height='70'/>
-                                </div>
+                                className="absolute hidden xl:block 2xl:block top-[30%] right-[20%] bg-gradient-to-b from-[#0f94c2] to-[#75ddf6] w-[1100px] h-[1100px] rounded-full transform translate-x-1/2 -translate-y-1/2">
+                                <Image
+                                    src="/image_1.svg"
+                                    alt="Medical Innovation"
+                                    loading="eager"
+                                    className="w-[73%]  h-[60%] rounded-b-full mt-[35%] ml-[13%]"
+                                    width={70}
+                                    height={70}
+                                />
                             </div>
                         </div>
                     </div>
 
-                    <div className="z-10 min-h-screen flex items-center justify-center">
+                    <div className="relative z-10 min-h-screen flex items-center justify-center">
                         <div className="container mx-auto px-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                                 <div className="text-center md:text-left">
@@ -76,10 +85,13 @@ export default function Home() {
                                         WEB MED <br/> ДОСТУПНАЯ МЕДИЦИНА
                                     </h1>
                                     <p className="text-xl md:text-2xl text-gray-600 mt-4 md:pr-20">
-                                        Мы создаем инновационные решения для <br/>доступной медицины.
+                                        Мы создаем инновационные решения для <br/>
+                                        доступной медицины.
                                     </p>
                                     <button
-                                        className="bg-gradient-to-br to-[#75ddf6] from-[#0f94c2] text-white px-6 py-3 rounded-full mt-8 hover:bg-blue-600 transition duration-300">
+                                        onClick={handleScroll}
+                                        className="bg-gradient-to-br from-[#0f94c2] to-[#75ddf6] text-white px-6 py-3 rounded-full mt-8 hover:bg-blue-600 transition duration-300"
+                                    >
                                         Узнать больше
                                     </button>
                                 </div>
@@ -134,60 +146,69 @@ export default function Home() {
                         </div>
                     </div>
                 </div>
-                <div className="min-h-screen bg-white rounded-t-2xl">
-                    <div className="container mx-auto px-4 py-8 sm:py-12">
-                        <div className="mx-auto">
-                            <div className="text-center mb-8">
-                                <h1 className="text-3xl sm:text-4xl font-bold text-medical-dark mb-4">
-                                    Найти ближайшие больницы
-                                </h1>
-                                <p className="text-gray-600">
-                                    Введите адрес, чтобы найти медицинские учреждения поблизости
-                                </p>
-                            </div>
-
-                            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                                <AddressInputWithMap onCoordinatesChange={handleCoordinatesChange} />
-                            </div>
-
-                            {loading && <HospitalSkeleton />}
-
-                            {error && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
-                                    {error}
-                                </div>
-                            )}
-
-                            {!loading && hospitals.length > 0 && (
-                                <div>
-                                    <h2 className="text-2xl font-semibold text-medical-dark mb-4">
-                                        Ближайшие больницы:
-                                    </h2>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {hospitals.map((hospital) => (
-                                            <HospitalCard
-                                                key={hospital.id}
-                                                id={hospital.id}
-                                                name={hospital.name}
-                                                address={hospital.address}
-                                                distance={hospital.distance}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {!loading && hospitals.length === 0 && (
-                                <div className="text-center py-8 text-gray-500">
-                                    Больницы не найдены
-                                </div>
-                            )}
-
+                <div className='bg-white'>
+                    <div className="container    mx-auto  w-fullpx-4 py-16">
+                        <div className="text-center mb-8">
+                            <h1 className="text-3xl sm:text-4xl font-bold text-medical-dark mb-4">
+                                Найти ближайшие больницы
+                            </h1>
+                            <p className="text-gray-600">
+                                Введите адрес и специализацию врача, чтобы найти медицинские учреждения поблизости
+                            </p>
                         </div>
+
+                        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                            <AddressInputWithMap onCoordinatesChange={handleCoordinatesChange} showMarks={true}/>
+                            <div className="mt-4">
+                                <label htmlFor="specialization" className="block text-gray-700 font-medium mb-2">
+                                    Специализация врача:
+                                </label>
+                                <input
+                                    type="text"
+                                    id="specialization"
+                                    value={specialization}
+                                    onChange={(e) => setSpecialization(e.target.value)}
+                                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder="Например, хирург"
+                                />
+                            </div>
+                        </div>
+
+                        {loading && <HospitalSkeleton/>}
+
+                        {error && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-600">
+                                {error}
+                            </div>
+                        )}
+
+                        {!loading && hospitals.length > 0 && (
+                            <div>
+                                <h2 className="text-2xl font-semibold mx-2 text-medical-dark mb-4">
+                                    Ближайшие больницы:
+                                </h2>
+                                <div className="grid grid-cols-1  sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    {hospitals.map((hospital) => (
+                                        <HospitalCard
+                                            key={hospital.id}
+                                            id={hospital.id}
+                                            name={hospital.name}
+                                            address={hospital.address}
+                                            distance={hospital.distance}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {!loading && hospitals.length === 0 && (
+                            <div className="text-center py-8 text-gray-500">
+                                Больницы не найдены
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
         </>
     );
-
 }

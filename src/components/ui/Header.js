@@ -33,12 +33,9 @@ export default function Header() {
         router.push('/clinics/profile');
     }, [router]);
 
-    const goToProfile = useCallback(() => {
-        router.push('/profile');
-    }, [router]);
 
     return (
-        <header className="fixed w-full flex p-5 justify-between items-center text-gray-800 backdrop-blur-3xl shadow-md z-10 h-[80px]">
+        <header className="fixed w-full flex p-5 justify-between items-center text-gray-800 backdrop-blur-3xl shadow-md z-30 h-[80px]">
             <div className="flex items-center">
                 <h2 className="text-3xl font-bold">
                     <a href="/">WEB MED</a>
@@ -72,7 +69,7 @@ export default function Header() {
                             <>
                                 <li>
                                     <a
-                                        href="/login"
+                                        href="/clinics/login"
                                         className="py-2.5 bg-white px-3 text-gray-800 rounded-2xl border-2 border-gray-300 opacity-80 hover:border-opacity-100 hover:border-blue-500"
                                     >
                                         Вход
@@ -80,7 +77,7 @@ export default function Header() {
                                 </li>
                                 <li>
                                     <a
-                                        href="/registration"
+                                        href="/clinics/registration"
                                         className="py-2.5 bg-white px-3 text-gray-800 rounded-2xl border-2 border-gray-300 opacity-80 hover:border-opacity-100 hover:border-blue-500"
                                     >
                                         Регистрация
@@ -91,16 +88,7 @@ export default function Header() {
                             <div className="flex items-center space-x-4">
 
                                 <div className="text-lg font-medium text-gray-800">
-                                    {session.user.type === 'clinic' ?
-
-                                        (
-                                            <p>Больница: {session.user.name}</p>
-                                        )
-
-
-                                     : (
-                                        <p>{session.user.firstName} {session.user.lastName[0]}.</p>
-                                    )}
+                                            <p>{session.user.name}</p>
                                 </div>
 
 
@@ -127,10 +115,9 @@ export default function Header() {
                                             className="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-lg border border-gray-300 z-10">
                                             <div
 
-                                                onClick={session.user.type === 'clinic' ?
-                                                        goToProfileMed
-                                                      :
-                                                        goToProfile}
+                                                onClick={goToProfileMed}
+
+
                                                 className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:rounded-lg cursor-pointer">
                                                 Профиль
                                             </div>

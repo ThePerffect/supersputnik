@@ -3,11 +3,6 @@ import { Clock, MapPin, Phone} from "lucide-react";
 import "@/app/globals.css";
 import Header from "@/components/ui/Header";
 
-
-
-
-
-
 const ClinicDetails = ({ clinic, medics, error }) => {
     const router = useRouter();
     const { id } = router.query;
@@ -23,6 +18,7 @@ const ClinicDetails = ({ clinic, medics, error }) => {
     return (
         <div>
             <Header/>
+            <title>{`${clinic.clinic[0].name} - Подробная информация`}</title>
             <div className="relative  bg-[#D3E4FD] py-20 px-4">
                 <div className="max-w-7xl mt-20 mx-auto">
                     <div className="text-center">
@@ -30,7 +26,7 @@ const ClinicDetails = ({ clinic, medics, error }) => {
                             {clinic.clinic[0].name}
                         </h1>
                         <p className="text-xl text-gray-700 mb-8">
-                            {clinic.clinic[0].type === 1 ? ("Государственная клиника") : ("Частная клиника") }
+                            {clinic.clinic[0].type === 1 ? ("Государственная клиника") : ("Частная клиника")}
                         </p>
                         <div className="flex  text-gray-800  items-center justify-center gap-4 text-lg">
                             <Phone className="w-6  h-6"/>
@@ -61,8 +57,8 @@ const ClinicDetails = ({ clinic, medics, error }) => {
                             <div>
                                 <h3 className="text-xl font-semibold mb-3">Часы работы</h3>
                                 <p className="text-gray-600">
-                                    Пн-Пт: 8:00 - 20:00<br/>
-                                    Сб-Вс: 9:00 - 17:00
+                                    Пн-Пт: {clinic.clinic[0].time}<br/>
+                                    Сб-Вс: {clinic.clinic[0].htime}
                                 </p>
                             </div>
                         </div>
@@ -97,7 +93,7 @@ export async function getServerSideProps(context) {
             throw new Error('Не удалось загрузить данные больницы');
         }
         const clinic = await res.json();
-
+        console.log(clinic)
         const medicsRes = await fetch(`${baseUrl}/api/clinic/GetMedics?id=${id}`);
         if (!medicsRes.ok) {
             throw new Error('Не удалось загрузить данные о работниках');

@@ -9,7 +9,8 @@ const ROBOTO = localFont({
 });
 
 export const metadata = {
-    title: "WEB MED: ДОСТУПНАЯ МЕДИЦИНА"
+    title: "WEB MED: ДОСТУПНАЯ МЕДИЦИНА",
+    description: "WEB MED: ДОСТУПНАЯ МЕДИЦИНА. Медицина для всех"
 };
 
 export default function RootLayout({ children }) {

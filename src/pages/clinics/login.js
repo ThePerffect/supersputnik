@@ -32,6 +32,8 @@ export default function ClinicLogin() {
             }
         } catch (error) {
             setError('Произошла ошибка. Попробуйте снова.');
+            showNotification("Произошла ошибка. Попробуйте снова.", "error");
+
         } finally {
             setLoading(false);
 
@@ -43,20 +45,7 @@ export default function ClinicLogin() {
     return (
         <div className="flex justify-center items-center flex-col text-black h-screen bg-gray-100">
             <title>WEB MED - Вход для учреждений</title>
-            <div className='flex'>
-                <a
-                    href="/login"
-                    className="block bg-gray-200 shadow-2xl w-48 p-2 text-center rounded-t-lg hover:bg-gray-100 transition duration-150"
-                >
-                    <span className='text-blue-700 font-medium text-sm'>Пользователь</span>
-                </a>
-                <a
-                    href="/clinics/login"
-                    className="block bg-white shadow-2xl w-48 p-2 text-center rounded-t-lg"
-                >
-                    <span className='text-blue-700 font-medium text-sm'>Учреждение</span>
-                </a>
-            </div>
+
             <div className="bg-white p-8 rounded-lg shadow-md w-96">
                 <h1 className="text-2xl font-bold mb-6">Вход для учреждений</h1>
                 {error && <p className="text-red-500 mb-4">{error}</p>}

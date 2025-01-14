@@ -19,6 +19,7 @@ export default async function handler(req, res) {
                 address: true,
                 phone: true,
                 time: true,
+                htime: true,
                 type: true,
             },
         });

@@ -68,6 +68,7 @@ export default NextAuth({
                         coord: clinic.cord_address,
                         phone: clinic.phone,
                         time: clinic.time,
+                        htime: clinic.htime,
                         type: "clinic",
                     };
                 }
@@ -93,6 +94,7 @@ export default NextAuth({
                     token.cord_address = session.coord
                     token.phone = session.phone
                     token.time = session.time
+                    token.htime = session.htime
                 }
             }
 
@@ -115,6 +117,7 @@ export default NextAuth({
                     token.coord = user.coord
                     token.phone = user.phone
                     token.time = user.time
+                    token.htime = user.htime
                 }
             }
 
@@ -141,6 +144,7 @@ export default NextAuth({
                 session.user.coord = token.coord
                 session.user.phone = token.phone
                 session.user.time = token.time
+                session.user.htime = token.htime
             }
 
             return session;

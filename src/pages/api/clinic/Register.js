@@ -36,6 +36,7 @@ export default async function handler(req, res) {
                 cord_address: coordinates,
                 type: 1,
                 time: "",
+                htime: "",
                 phone: "",
             },
         });

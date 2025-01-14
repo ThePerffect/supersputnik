@@ -1,14 +1,16 @@
 'use client';
 
-import {useEffect, useState} from "react";
-import {Map, Placemark, YMaps} from "react-yandex-maps";
+import { useEffect, useState } from "react";
+import { Map, Placemark, YMaps } from "react-yandex-maps";
 import Loading from "@/components/ui/Loading";
 
-const AddressInputWithMap = ({onAddressChange, onCoordinatesChange, initialCoords, initialAddress}) => {
+const AddressInputWithMap = ({ onAddressChange, onCoordinatesChange, initialCoords, initialAddress, showMarks }) => {
     const [address, setAddress] = useState("");
     const [selectedCoords, setSelectedCoords] = useState([55.75, 37.57]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
+    const [hospitals, setHospitals] = useState([]);
+
     useEffect(() => {
         if (initialCoords && Array.isArray(initialCoords) && initialCoords.length === 2) {
             setSelectedCoords(initialCoords);
@@ -17,12 +19,12 @@ const AddressInputWithMap = ({onAddressChange, onCoordinatesChange, initialCoord
             setAddress(initialAddress);
         }
     }, [initialCoords, initialAddress]);
+
     const handleSearch = async () => {
         setLoading(true);
         setError("");
-
-        try {
-            if (address.length > 0) {
+        if (address.length > 0) {
+            try {
                 const apiKey = "a08951d8-f98a-45b7-a721-e42b293eb9ce";
                 const url = `https://geocode-maps.yandex.ru/1.x/?apikey=${apiKey}&geocode=${encodeURIComponent(
                     address
@@ -44,15 +46,45 @@ const AddressInputWithMap = ({onAddressChange, onCoordinatesChange, initialCoord
                     .reverse();
 
                 setSelectedCoords(coordinates);
-
+                console.log(coordinates)
                 if (onAddressChange) onAddressChange(address);
                 if (onCoordinatesChange) onCoordinatesChange(coordinates);
+
+                if (showMarks) {
+                    try {
+                        setLoading(true);
+                        setError("");
+                        setHospitals([]);
+
+                        const response = await fetch(
+                            `/api/nearest-hospitals?lat=${coordinates[0]}&lng=${coordinates[1]}`
+                        );
+
+                        if (!response.ok) {
+                            throw new Error("Не удалось загрузить больницы");
+                        }
+
+                        const data = await response.json();
+
+                        if (!Array.isArray(data.hospitals)) {
+                            throw new Error("Некорректный формат ответа от сервера");
+                        }
+
+                        setHospitals(data.hospitals);
+
+                    } catch (err) {
+                        setError(err.message || "Произошла ошибка");
+                    } finally {
+                        setLoading(false);
+                    }
+                }
+
+            } catch (err) {
+                console.error("Ошибка геокодирования:", err);
+                setError("Произошла ошибка при обработке адреса.");
+            } finally {
+                setLoading(false);
             }
-        } catch (err) {
-            console.error("Ошибка геокодирования:", err);
-            setError("Произошла ошибка при обработке адреса.");
-        } finally {
-            setLoading(false);
         }
     };
 
@@ -85,13 +117,28 @@ const AddressInputWithMap = ({onAddressChange, onCoordinatesChange, initialCoord
                 </button>
             </div>
 
-            <YMaps query={{apikey: "a08951d8-f98a-45b7-a721-e42b293eb9ce"}}>
+            <YMaps query={{ apikey: "a08951d8-f98a-45b7-a721-e42b293eb9ce" }}>
                 <Map
-                    state={{center: selectedCoords, zoom: 15}}
+                    state={{ center: selectedCoords, zoom: 15 }}
                     width="100%"
                     height="300px"
                 >
-                    <Placemark geometry={selectedCoords}/>
+                    <Placemark geometry={selectedCoords} />
+
+                    {hospitals.map((hospital) => {
+                        const coords = hospital.cord_address.split(",").map(Number);
+                        return (
+                            <Placemark
+                                key={hospital.id}
+                                geometry={coords}
+                                options={{
+                                    iconColor: "red",
+                                    preset: "islands#redMedicalCircleIcon",
+
+                                }}
+                            />
+                        );
+                    })}
                 </Map>
             </YMaps>
         </div>

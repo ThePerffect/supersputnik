@@ -28,7 +28,8 @@ export default function HospitalProfile() {
     const [page, setPage] = useState(1);
     const [medic, setMedic] = useState([]);
     const [error, setError] = useState("");
-
+    const [weekendStartTime, setWeekendStartTime] = useState("");
+    const [weekendEndTime, setWeekendEndTime] = useState("");
     const [Mname, setMname] = useState("");
     const [Mlastname, setMlastname] = useState("");
     const [Mmiddlename, setMmiddlename] = useState("");
@@ -57,12 +58,17 @@ export default function HospitalProfile() {
             setType(user.ctype);
             setPhone(user.phone);
 
+
             if (user.time) {
                 const [start, end] = user.time.split('-');
                 setStartTime(start);
                 setEndTime(end);
             }
-
+            if (user.htime) {
+                const [start, end] = user.time.split('-');
+                setWeekendStartTime(start);
+                setWeekendEndTime(end);
+            }
 
             console.log(id)
         };
@@ -145,6 +151,7 @@ export default function HospitalProfile() {
                     email,
                     phone,
                     time: `${startTime}-${endTime}`,
+                    htime: `${weekendStartTime}-${weekendEndTime}`,
                     type,
                 }),
             });
@@ -161,6 +168,7 @@ export default function HospitalProfile() {
                 email,
                 phone,
                 time: `${startTime}-${endTime}`,
+                htime: `${weekendStartTime}-${weekendEndTime}`,
                 ctype: type,
             });
 
@@ -169,6 +177,8 @@ export default function HospitalProfile() {
 
         } catch (error) {
             setError(error.message);
+            showNotification("Произошла ошибка. Попробуйте снова.", "error");
+
         } finally {
             setIsSubmitting(false);
         }
@@ -181,7 +191,7 @@ export default function HospitalProfile() {
             const response = await fetch('/api/clinic/AddMedic', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json', // Обязательный заголовок
+                    'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
                     id: id,
@@ -195,14 +205,18 @@ export default function HospitalProfile() {
 
             if (response.ok) {
                 const data = await response.json();
-                console.log('Успешно добавлено:', data);
+                showNotification("Сотрудник добавлен", "success");
                 await fetchMedics();
             } else {
                 const error = await response.json();
                 console.error('Ошибка:', error.error || 'Неизвестная ошибка.');
+                showNotification("Произошла ошибка!", "error");
+
             }
         } catch (err) {
             console.error('Ошибка при добавлении:', err.message);
+            showNotification("Произошла ошибка!", "error");
+
         }
     };
 
@@ -210,9 +224,12 @@ export default function HospitalProfile() {
 
     return (
         <div className="bg-white flex">
-            <Header />
-            <div className="fixed top-0 left-0 h-screen bg-white flex flex-col mt-24 w-80 text-gray-800 transition-all duration-700 overflow-y-auto">
-                <h1 className="text-2xl ml-5 mb-3 font-bold">Настройки</h1>
+            <Header/>
+            <title>{`${name} - Профиль`}</title>
+
+            <div
+                className="fixed top-0 left-0 h-screen bg-white flex flex-col mt-24 w-80 text-gray-800 transition-all duration-700 overflow-y-auto">
+                <h1 className="text-2xl ml-5 mb-3 font-bold">Профиль</h1>
                 <div className="space-y-2 px-2">
                     <a
                         href="#"
@@ -261,7 +278,8 @@ export default function HospitalProfile() {
                         <h1 className="text-3xl font-semibold text-gray-800 mb-6">Данные больницы</h1>
 
                         {error &&
-                            <div className="mb-4 p-3 bg-red-100 text-red-700 border border-red-400 rounded">{error}</div>}
+                            <div
+                                className="mb-4 p-3 bg-red-100 text-red-700 border border-red-400 rounded">{error}</div>}
                         {success && (
                             <div className="mb-4 p-3 bg-green-100 text-green-700 border border-green-400 rounded">
                                 {success}
@@ -309,27 +327,54 @@ export default function HospitalProfile() {
                                 />
                             </div>
 
-                            <div className="flex flex-col space-y-2">
-                                <label htmlFor="start-time" className="text-gray-700 font-medium">Часы работы</label>
-                                <div className="flex items-center space-x-2">
-                                    <input
-                                        type="time"
-                                        id="start-time"
+                            <div className="flex flex-col space-y-4">
+                                {/* Часы работы */}
+                                <div className="flex flex-col space-y-2">
+                                    <label htmlFor="start-time" className="text-gray-700 font-medium">Часы работы
+                                        (будние дни)</label>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="time"
+                                            id="start-time"
+                                            className="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                            value={startTime}
+                                            onChange={(e) => setStartTime(e.target.value)}
+                                        />
+                                        <span className="text-gray-500">—</span>
+                                        <input
+                                            type="time"
+                                            id="end-time"
+                                            className="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                            value={endTime}
+                                            onChange={(e) => setEndTime(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
 
-                                        className="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                        value={startTime}
-                                        onChange={(e) => setStartTime(e.target.value)}
-                                    />
-                                    <span className="text-gray-500">—</span>
-                                    <input
-                                        type="time"
-                                        id="end-time"
-                                        className="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                                        value={endTime}
-                                        onChange={(e) => setEndTime(e.target.value)}
-                                    />
+                                {/* Часы работы (выходные дни) */}
+                                <div className="flex flex-col space-y-2">
+                                    <label htmlFor="weekend-start-time" className="text-gray-700 font-medium">Часы
+                                        работы (выходные дни)</label>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="time"
+                                            id="weekend-start-time"
+                                            className="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                            value={weekendStartTime}
+                                            onChange={(e) => setWeekendStartTime(e.target.value)}
+                                        />
+                                        <span className="text-gray-500">—</span>
+                                        <input
+                                            type="time"
+                                            id="weekend-end-time"
+                                            className="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                            value={weekendEndTime}
+                                            onChange={(e) => setWeekendEndTime(e.target.value)}
+                                        />
+                                    </div>
                                 </div>
                             </div>
+
 
                             <div>
                                 <label htmlFor="phone">Номер регистратуры</label>

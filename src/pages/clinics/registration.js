@@ -65,21 +65,8 @@ export default function ClinicRegistration() {
     return (
         <div className="flex justify-center  bg- items-center flex-col text-black h-screen bg-gray-100">
             <title>WEB MED - Регистрация</title>
-            <div className="flex">
-                <a
-                    href="/registration"
-                    className="block bg-gray-200 shadow-2xl w-48 p-2 text-center rounded-t-lg transition duration-150"
-                >
-                    <span className="text-blue-700 font-medium text-sm">Пользователь</span>
-                </a>
-                <a
-                    href="#"
-                    className="block bg-white shadow-2xl w-48 p-2 text-center rounded-t-lg hover:bg-gray-100 transition duration-150"
-                >
-                    <span className="text-blue-700 font-medium text-sm">Учреждение</span>
-                </a>
-            </div>
-            <div className="bg-white p-4 rounded-b-lg shadow-md w-96 text-xs">
+
+            <div className="bg-white p-4 rounded-lg shadow-md w-96 text-xs">
                 <h1 className="text-xl font-bold mb-3">Регистрация учреждения</h1>
                 {error && <p className="text-red-500 mb-2">{error}</p>}
                 <form onSubmit={handleSubmit} className="space-y-3">

@@ -1,5 +1,4 @@
 import React from "react";
-import Link from "react"
 
 export default function HospitalCard({ id, name, address, distance })
 {
@@ -9,7 +8,7 @@ export default function HospitalCard({ id, name, address, distance })
                 <div className="p-4">
                     <h3 className="text-lg font-semibold mb-2">{name}</h3>
                     <p className="text-gray-600">{address}</p>
-                    <p className="text-sm text-gray-500">Расстояние: {distance}</p>
+                    <p className="text-sm text-gray-500">Расстояние: {distance}м</p>
                 </div>
             </div>
         </a>
