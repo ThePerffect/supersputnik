@@ -58,7 +58,7 @@ const AddressInputWithMap = ({onAddressChange, onCoordinatesChange, initialCoord
 
     return (
         <div>
-            <label htmlFor="addresinput" className="block text-sm font-medium text-gray-700">Введите адрес</label>
+            <label htmlFor="addresinput" className="block text-sm font-medium text-gray-700">Введите ваш адрес</label>
             {error && <p className="text-red-500 mt-2">{error}</p>}
             <div className="flex my-2">
                 <input
