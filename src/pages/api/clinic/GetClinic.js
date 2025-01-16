@@ -24,6 +24,8 @@ export default async function handler(req, res) {
             },
         });
 
+
+
         return res.status(200).json({ clinic });
     } catch (error) {
         console.error("Ошибка при получении сотрудников:", error);

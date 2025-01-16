@@ -466,6 +466,9 @@ export default function HospitalProfile() {
                                     </div>
                                     <div className='mt-3'>
                                         <SpecializationInput onSpecializationChange={setSpecialization}/>
+                                        <p className="text-gray-400 text-sm mt-1">
+                                            Если отсутствует необходимая вам специализация, просто впишите её.
+                                        </p>
                                     </div>
 
                                     <button
@@ -486,10 +489,9 @@ export default function HospitalProfile() {
                             <h1 className="text-3xl font-semibold mb-6">Сотрудники</h1>
 
                             {medic && medic.length > 0 ? (
-                                <ul className="grid grid-cols-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                                <div className="grid grid-cols-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                                     {medic.map((medicItem) => (
-                                        <li
-                                            key={medicItem.id}
+                                        <div
                                             className="p-4 border rounded-md shadow-sm bg-gray-50"
                                         >
                                             <p>
@@ -499,9 +501,9 @@ export default function HospitalProfile() {
                                             <p><strong>Дата
                                                 рождения:</strong> {new Date(medicItem.MbirthDate).toLocaleDateString()}
                                             </p>
-                                        </li>
+                                        </div>
                                     ))}
-                                </ul>
+                                </div>
                             ) : (
                                 <p className="text-gray-500">Нет данных о сотрудниках.</p>
                             )}

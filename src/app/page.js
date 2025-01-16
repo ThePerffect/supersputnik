@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Building2, Clock, Stethoscope, Users } from "lucide-react";
 import Header from "../components/ui/Header";
 import Image from "next/image";
 import HospitalCard from "@/components/ui/HospitalCard";
 import HospitalSkeleton from "@/components/ui/HospitalSkeleton";
 import AddressInputWithMap from "@/components/ui/AddressInputWithMap";
+import SpecializationInput from "@/components/ui/SpecializationInput";
 
 export default function Home() {
     const [hospitals, setHospitals] = useState([]);
@@ -14,12 +15,13 @@ export default function Home() {
     const [error, setError] = useState("");
     const [specialization, setSpecialization] = useState("");
 
+
     const handleCoordinatesChange = async (coordinates) => {
         try {
             setLoading(true);
             setError("");
             setHospitals([]);
-
+            console.log(specialization)
             const response = await fetch(
                 `/api/nearest-hospitals?lat=${coordinates[0]}&lng=${coordinates[1]}&specialization=${specialization}`
             );
@@ -47,6 +49,7 @@ export default function Home() {
             setLoading(false);
         }
     };
+    console.log(specialization)
 
     const handleScroll = () => {
         window.scrollTo({
@@ -158,20 +161,11 @@ export default function Home() {
                         </div>
 
                         <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-                            <AddressInputWithMap onCoordinatesChange={handleCoordinatesChange} showMarks={true}/>
-                            <div className="mt-4">
-                                <label htmlFor="specialization" className="block text-gray-700 font-medium mb-2">
-                                    Специализация врача:
-                                </label>
-                                <input
-                                    type="text"
-                                    id="specialization"
-                                    value={specialization}
-                                    onChange={(e) => setSpecialization(e.target.value)}
-                                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Например, хирург"
+                            <AddressInputWithMap onCoordinatesChange={handleCoordinatesChange} showMarks={true} specInput={
+                                <SpecializationInput onSpecializationChange={setSpecialization}/>}
+                                spec={specialization} needinput={!specialization}
                                 />
-                            </div>
+
                         </div>
 
                         {loading && <HospitalSkeleton/>}

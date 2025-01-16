@@ -64,19 +64,30 @@ const ClinicDetails = ({ clinic, medics, error }) => {
                         </div>
                     </div>
                 </div>
+
+
+                <h2 className='text-3xl font-bold mb-5 mt-5 text-center'>Сотрудники больницы</h2>
+                <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                    {medics.medics.map((medic) => (
+                        <li
+                            key={medic.id}
+                            className="bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200 flex flex-col items-center"
+                        >
+                            <div
+                                className="w-12 h-12 bg-blue-500 text-white flex items-center justify-center rounded-full text-lg font-bold mb-4"
+                            >
+                                {medic.MfirstName[0]}
+                                {medic.MlastName[0]}
+                            </div>
+                            <p className="text-center text-lg font-semibold text-gray-800 mb-2">
+                                {medic.MfirstName} {medic.MlastName}
+                            </p>
+                            <p className="text-center text-sm text-gray-500">{medic.prof}</p>
+                        </li>
+                    ))}
+                </ul>
+
             </div>
-            <h1></h1>
-            <p>Адрес: {clinic.clinic[0].address}</p>
-            <p>Телефон: {clinic.clinic[0].phone}</p>
-            <p>Часы работы: {clinic.clinic[0].time}</p>
-            <h2>Сотрудники больницы</h2>
-            <ul>
-                {medics.medics.map((medic) => (
-                    <li key={medic.id}>
-                        {medic.MfirstName} {medic.MlastName} - {medic.prof}
-                    </li>
-                ))}
-            </ul>
         </div>
     );
 };

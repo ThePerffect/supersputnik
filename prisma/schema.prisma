@@ -22,8 +22,8 @@ model User {
 
 model Medics {
   id          Int     @id @default(autoincrement())
-  cid    Int
-  prof  String
+  cid           Int
+  prof          String
   MfirstName     String
   MlastName      String
   MmiddleName    String

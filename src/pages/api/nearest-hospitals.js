@@ -1,10 +1,10 @@
-import prisma from "../../../prisma/client"; // Настройте путь к вашему клиенту Prisma
+import prisma from "../../../prisma/client";
 
-const apiKey = '5b3ce3597851110001cf624873a77379f10446549d98760d8c87a40d'; // Ваш API-ключ
+const apiKey = '5b3ce3597851110001cf624873a77379f10446549d98760d8c87a40d';
 const openRouteServiceUrl = 'https://api.openrouteservice.org/v2/matrix/driving-car';
 
 export default async function handler(req, res) {
-    const { lat, lng } = req.query;
+    const { lat, lng, specialization } = req.query;
     const userLat = parseFloat(lat);
     const userLng = parseFloat(lng);
 
@@ -13,23 +13,19 @@ export default async function handler(req, res) {
     }
 
     try {
-        // Извлекаем все больницы из базы данных
         const hospitals = await prisma.hospital.findMany();
 
-        // Собираем массив координат больниц
         const hospitalLocations = hospitals.map(hospital => {
             const [hospitalLat, hospitalLng] = hospital.cord_address.split(',').map(Number);
-            return [hospitalLng, hospitalLat]; // OpenRouteService ожидает [lng, lat]
+            return [hospitalLng, hospitalLat];
         });
 
-        // Добавляем координаты пользователя в массив
         const locations = [[userLng, userLat], ...hospitalLocations];
 
-        // Формируем запрос к OpenRouteService для расчета матрицы расстояний
         const body = JSON.stringify({
             locations,
             metrics: ['distance'],
-            units: 'm'
+            units: 'm',
         });
 
         const response = await fetch(openRouteServiceUrl, {
@@ -37,9 +33,9 @@ export default async function handler(req, res) {
             headers: {
                 'Content-Type': 'application/json; charset=utf-8',
                 'Accept': 'application/json',
-                'Authorization': apiKey
+                'Authorization': apiKey,
             },
-            body
+            body,
         });
 
         if (!response.ok) {
@@ -49,14 +45,47 @@ export default async function handler(req, res) {
         const data = await response.json();
         const distances = data.distances[0].slice(1);
 
-        const nearbyHospitals = hospitals
-            .map((hospital, index) => ({
-                ...hospital,
-                distance: distances[index]
-            }))
-            .filter(hospital => hospital.distance <= 30000); // Фильтруем по радиусу
+        let filteredHospitals = hospitals.map((hospital, index) => ({
+            ...hospital,
+            distance: distances[index],
+        })).filter(hospital => hospital.distance <= 30000);
 
-        return res.status(200).json({ hospitals: nearbyHospitals });
+        if (specialization) {
+
+            const hospitalsWithMedics = await Promise.all(
+                filteredHospitals.map(async hospital => {
+                    const medics = await prisma.medics.findMany({
+                        where: {
+                            cid: hospital.id,
+                            prof: {
+                                equals: specialization,
+
+                            },
+                        },
+                        select: {
+                            MfirstName: true,
+                            MlastName: true,
+                            MmiddleName: true,
+                            MbirthDate: true,
+                            prof: true,
+                        },
+                    });
+
+                    if (medics.length > 0) {
+                        return {
+                            ...hospital,
+                            medics,
+                        };
+                    }
+
+                    return null;
+                })
+            );
+
+            filteredHospitals = hospitalsWithMedics.filter(hospital => hospital !== null);
+        }
+
+        return res.status(200).json({ hospitals: filteredHospitals });
     } catch (error) {
         console.error("Ошибка при получении больниц:", error);
         return res.status(500).json({ error: "Ошибка при получении данных больниц" });

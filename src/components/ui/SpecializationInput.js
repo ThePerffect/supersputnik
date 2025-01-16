@@ -6,7 +6,6 @@ function SpecializationInput({ onSpecializationChange }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // Загрузка списка профессий
     useEffect(() => {
         const fetchProfessions = async () => {
             try {
@@ -27,12 +26,11 @@ function SpecializationInput({ onSpecializationChange }) {
         fetchProfessions();
     }, []);
 
-    // Обработка изменения значения
     const handleSpecializationChange = (e) => {
         const value = e.target.value;
         setSpecialization(value);
         if (onSpecializationChange) {
-            onSpecializationChange(value); // Передаём значение в родительский компонент
+            onSpecializationChange(value);
         }
     };
 
@@ -60,9 +58,7 @@ function SpecializationInput({ onSpecializationChange }) {
                 className="mt-1 text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 placeholder="Выберите или введите специализацию"
             />
-            <p className="text-gray-400 text-sm mt-1">
-                Если отсутствует необходимая вам специализация, просто впишите её.
-            </p>
+
             <datalist id="specializations">
                 {Array.isArray(professions) &&
                     professions.map((profession, index) => (
