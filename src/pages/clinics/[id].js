@@ -3,6 +3,7 @@ import { Clock, MapPin, Phone} from "lucide-react";
 import "@/app/globals.css";
 import Header from "@/components/ui/Header";
 
+
 const ClinicDetails = ({ clinic, medics, error }) => {
     const router = useRouter();
     const { id } = router.query;
