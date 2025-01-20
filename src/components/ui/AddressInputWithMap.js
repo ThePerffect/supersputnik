@@ -29,10 +29,7 @@ const AddressInputWithMap = ({ onAddressChange, onCoordinatesChange, initialCoor
     }, [specInput, spec]);
 
     const handleSearch = async () => {
-        if (!specialization && !needinput) {
-            setError("Дождитесь установки специализации.");
-            return;
-        }
+
 
         setLoading(true);
         setError("");
@@ -62,6 +59,7 @@ const AddressInputWithMap = ({ onAddressChange, onCoordinatesChange, initialCoor
 
                 if (onAddressChange) onAddressChange(address);
                 if (onCoordinatesChange) onCoordinatesChange(coordinates);
+                console.log(coordinates)
 
                 if (showMarks) {
                     try {

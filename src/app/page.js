@@ -8,6 +8,7 @@ import HospitalCard from "@/components/ui/HospitalCard";
 import HospitalSkeleton from "@/components/ui/HospitalSkeleton";
 import AddressInputWithMap from "@/components/ui/AddressInputWithMap";
 import SpecializationInput from "@/components/ui/SpecializationInput";
+import Footer from "@/components/ui/Footer";
 
 export default function Home() {
     const [hospitals, setHospitals] = useState([]);
@@ -53,7 +54,7 @@ export default function Home() {
 
     const handleScroll = () => {
         window.scrollTo({
-            top: 1300,
+            top: 1200,
             left: 0,
             behavior: "smooth",
         });
@@ -201,6 +202,7 @@ export default function Home() {
                             </div>
                         )}
                     </div>
+                    <Footer/>
                 </div>
             </div>
         </>

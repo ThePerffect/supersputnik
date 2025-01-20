@@ -46,16 +46,7 @@ export default function Header() {
                             Главная
                         </a>
                     </li>
-                    <li>
-                        <a href="#cels" className="hover:text-blue-500">
-                            Консультация
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#contact" className="hover:text-blue-500">
-                            О нас
-                        </a>
-                    </li>
+
                 </ul>
             </div>
             <nav>
