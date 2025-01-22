@@ -2,13 +2,13 @@
 
 import React, { useState } from "react";
 import { Building2, Clock, Stethoscope, Users } from "lucide-react";
-import Header from "../components/ui/Header";
+import Header from "@/components/default/Header";
 import Image from "next/image";
-import HospitalCard from "@/components/ui/HospitalCard";
-import HospitalSkeleton from "@/components/ui/HospitalSkeleton";
-import AddressInputWithMap from "@/components/ui/AddressInputWithMap";
-import SpecializationInput from "@/components/ui/SpecializationInput";
-import Footer from "@/components/ui/Footer";
+import HospitalCard from "@/components/default/HospitalCard";
+import HospitalSkeleton from "@/components/default/HospitalSkeleton";
+import AddressInputWithMap from "@/components/default/AddressInputWithMap";
+import SpecializationInput from "@/components/default/SpecializationInput";
+import Footer from "@/components/default/Footer";
 
 export default function Home() {
     const [hospitals, setHospitals] = useState([]);

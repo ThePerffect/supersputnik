@@ -3,11 +3,11 @@ import { useSession } from 'next-auth/react';
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import '@/app/globals.css';
-import Header from '../../components/ui/Header';
-import AddressInputWithMap from '../../components/ui/AddressInputWithMap';
-import {useNotification} from "@/components/ui/Message";
-import SpecializationInput from "@/components/ui/SpecializationInput";
-import InputField from "@/components/ui/InputField";
+import Header from '@/components/default/Header';
+import AddressInputWithMap from '@/components/default/AddressInputWithMap';
+import {useNotification} from "@/components/default/Message";
+import SpecializationInput from "@/components/default/SpecializationInput";
+import InputField from "@/components/default/InputField";
 
 
 export default function HospitalProfile() {

@@ -1,6 +1,6 @@
 
 import { SessionProvider } from "next-auth/react";
-import {NotificationProvider} from "@/components/ui/Message";
+import {NotificationProvider} from "@/components/default/Message";
 
 function MyApp({ Component, pageProps }) {
     return (

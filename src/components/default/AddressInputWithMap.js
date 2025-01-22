@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Map, Placemark, YMaps } from "react-yandex-maps";
-import Loading from "@/components/ui/Loading";
+import Loading from "@/components/default/Loading";
 
 const AddressInputWithMap = ({ onAddressChange, onCoordinatesChange, initialCoords, initialAddress, showMarks, specInput, spec, needinput }) => {
     const [address, setAddress] = useState("");

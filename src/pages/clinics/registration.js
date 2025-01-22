@@ -3,9 +3,9 @@
 import { useState } from "react";
 import "@/app/globals.css";
 import { useRouter } from "next/navigation";
-import InputField from "@/components/ui/InputField";
-import AddressInputWithMap from "@/components/ui/AddressInputWithMap";
-import {useNotification} from "@/components/ui/Message";
+import InputField from "@/components/default/InputField";
+import AddressInputWithMap from "@/components/default/AddressInputWithMap";
+import {useNotification} from "@/components/default/Message";
 
 export default function ClinicRegistration() {
     const [clinicName, setClinicName] = useState("");

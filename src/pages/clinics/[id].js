@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { Clock, MapPin, Phone} from "lucide-react";
 import "@/app/globals.css";
-import Header from "@/components/ui/Header";
+import Header from "@/components/default/Header";
 
 
 const ClinicDetails = ({ clinic, medics, error }) => {
