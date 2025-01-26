@@ -2,18 +2,19 @@ import { useState } from "react";
 import { useRouter } from "next/router";
 import Header from "@/components/default/Header";
 import Calendar from "@/components/default/Calendar";
+import "@/app/globals.css";
 
 const ClinicDetails = ({ clinic, medics, error }) => {
     const router = useRouter();
     const { id } = router.query;
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedTime, setSelectedTime] = useState("");
-    const [isModalOpen, setIsModalOpen] = useState(false); // состояние для модального окна
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedMedic, setSelectedMedic] = useState(null);
-    const disabledDates = useState([]);
+    const [disabledDates, setDisabledDates] = useState([]);
 
     if (error) {
-        return <div>Ошибка: {error}</div>;
+        return <div className="text-red-500">Ошибка: {error}</div>;
     }
 
     if (!clinic) {
@@ -22,7 +23,7 @@ const ClinicDetails = ({ clinic, medics, error }) => {
 
     const handleSelectMedic = (medic) => {
         setSelectedMedic(medic);
-        setIsModalOpen(true); // Открываем модальное окно при выборе специалиста
+        setIsModalOpen(true);
     };
 
     const handleConfirmAppointment = () => {
@@ -37,24 +38,16 @@ const ClinicDetails = ({ clinic, medics, error }) => {
     };
 
     const renderTimeSelector = () => {
-        const workingHours = Array.from({ length: 10 }, (_, i) => 9 + i);
-        const unavailableTimes = [
-            { hour: 12, minute: 0 },
-            { hour: 15, minute: 0 }
-        ];
+        if (!selectedMedic || !selectedDate) {
+            return <p className="text-gray-500">Выберите врача и дату для продолжения.</p>;
+        }
 
+        const dayName = selectedDate.toLocaleString("en-US", { weekday: "long" });
+        const scheduleForDay = selectedMedic.schedule?.find((entry) => entry.day === dayName);
 
-        const generateTimeSlots = (hour) => {
-            const slots = [];
-            for (let minute = 0; minute < 60; minute += 10) {
-                slots.push({ hour, minute });
-            }
-            return slots;
-        };
-
-        const handleChange = (event) => {
-            setSelectedTime(event.target.value);
-        };
+        if (!scheduleForDay || scheduleForDay.hours.length === 0) {
+            return <p className="text-red-500">На выбранную дату нет доступного времени.</p>;
+        }
 
         return (
             <div className="mb-4">
@@ -64,27 +57,16 @@ const ClinicDetails = ({ clinic, medics, error }) => {
                 <select
                     id="appointment-time"
                     value={selectedTime}
-                    onChange={handleChange}
+                    onChange={(e) => setSelectedTime(e.target.value)}
                     className="w-full p-2 border rounded-lg bg-white text-gray-700 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     <option value="" disabled>
                         Выберите время
                     </option>
-                    {workingHours.map((hour) => (
-                        generateTimeSlots(hour).map(({ hour, minute }) => {
-                            const timeString = `${hour}:${minute === 0 ? "00" : minute}`;
-                            const isUnavailable = unavailableTimes.some(
-                                (time) => time.hour === hour && time.minute === minute
-                            );
-
-                            return (
-                                !isUnavailable && (
-                                    <option key={timeString} value={timeString}>
-                                        {timeString}
-                                    </option>
-                                )
-                            );
-                        })
+                    {scheduleForDay.hours.map((time) => (
+                        <option key={time} value={time}>
+                            {time}
+                        </option>
                     ))}
                 </select>
             </div>
@@ -124,7 +106,8 @@ const ClinicDetails = ({ clinic, medics, error }) => {
                             <div>
                                 <h3 className="text-xl font-semibold mb-3">Часы работы</h3>
                                 <p className="text-gray-600">
-                                    Пн-Пт: {clinic.clinic[0].time}<br/>
+                                    Пн-Пт: {clinic.clinic[0].time}
+                                    <br />
                                     Сб-Вс: {clinic.clinic[0].htime}
                                 </p>
                             </div>
@@ -134,28 +117,31 @@ const ClinicDetails = ({ clinic, medics, error }) => {
 
                 <h2 className="text-3xl font-bold mb-5 mt-5 text-center">Сотрудники больницы</h2>
                 <ul className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    {medics.medics.map((medic) => (
-                        <li
-                            key={medic.id}
-                            className="bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200 flex flex-col items-center"
-                        >
-                            <div
-                                className="w-12 h-12 bg-blue-500 text-white flex items-center justify-center rounded-full text-lg font-bold mb-4">
-                                {medic.MfirstName[0]}
-                                {medic.MlastName[0]}
-                            </div>
-                            <p className="text-center text-lg font-semibold text-gray-800 mb-2">
-                                {medic.MfirstName} {medic.MlastName}
-                            </p>
-                            <p className="text-center text-sm text-gray-500 mb-3">{medic.prof}</p>
-                            <button
-                                onClick={() => handleSelectMedic(medic)}
-                                className="bg-blue-500 text-white text-center justify-center rounded-lg w-full"
+                    {medics.medics.length > 0 ? (
+                        medics.medics.map((medic) => (
+                            <li
+                                key={medic.id}
+                                className="bg-white p-4 rounded-lg shadow-md border border-gray-200 hover:shadow-lg transition-shadow duration-200 flex flex-col items-center"
                             >
-                                Записаться на приём
-                            </button>
-                        </li>
-                    ))}
+                                <div className="w-12 h-12 bg-blue-500 text-white flex items-center justify-center rounded-full text-lg font-bold mb-4">
+                                    {medic.MfirstName[0]}
+                                    {medic.MlastName[0]}
+                                </div>
+                                <p className="text-center text-lg font-semibold text-gray-800 mb-2">
+                                    {medic.MfirstName} {medic.MlastName}
+                                </p>
+                                <p className="text-center text-sm text-gray-500 mb-3">{medic.prof}</p>
+                                <button
+                                    onClick={() => handleSelectMedic(medic)}
+                                    className="bg-blue-500 text-white text-center justify-center rounded-lg w-full py-2"
+                                >
+                                    Записаться на приём
+                                </button>
+                            </li>
+                        ))
+                    ) : (
+                        <p className="text-center col-span-full text-gray-500">Нет доступных сотрудников.</p>
+                    )}
                 </ul>
             </div>
 
@@ -166,7 +152,7 @@ const ClinicDetails = ({ clinic, medics, error }) => {
                         <div className="mb-4">
                             <label className="block text-gray-700 mb-2">Выберите дату:</label>
                             <Calendar
-                                disabledDates={disabledDates.map(date => new Date(date))}
+                                disabledDates={disabledDates.map((date) => new Date(date))}
                                 selectedDate={selectedDate}
                                 onDateChange={setSelectedDate}
                             />
@@ -174,7 +160,7 @@ const ClinicDetails = ({ clinic, medics, error }) => {
                         {renderTimeSelector()}
                         <div className="flex justify-end gap-4">
                             <button
-                                onClick={() => setIsModalOpen(false)} // Закрыть модальное окно
+                                onClick={() => setIsModalOpen(false)}
                                 className="bg-gray-500 text-white px-4 py-2 rounded-lg"
                             >
                                 Отмена
@@ -192,5 +178,39 @@ const ClinicDetails = ({ clinic, medics, error }) => {
         </div>
     );
 };
+
+export async function getServerSideProps(context) {
+    const { id } = context.params;
+
+    const isServer = typeof window === "undefined";
+    const baseUrl = isServer ? `http://${context.req.headers.host}` : "";
+
+    try {
+        const res = await fetch(`${baseUrl}/api/clinic/GetClinic?id=${id}`);
+        if (!res.ok) {
+            throw new Error("Не удалось загрузить данные больницы");
+        }
+        const clinic = await res.json();
+
+        const medicsRes = await fetch(`${baseUrl}/api/clinic/GetMedics?id=${id}`);
+        if (!medicsRes.ok) {
+            throw new Error("Не удалось загрузить данные о работниках");
+        }
+        const medics = await medicsRes.json();
+
+        return {
+            props: {
+                clinic,
+                medics,
+            },
+        };
+    } catch (error) {
+        return {
+            props: {
+                error: error.message,
+            },
+        };
+    }
+}
 
 export default ClinicDetails;
