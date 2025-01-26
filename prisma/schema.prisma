@@ -20,14 +20,13 @@ model User {
 }
 
 model Medics {
-  id          Int      @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   cid         Int
   prof        String
   MfirstName  String
   MlastName   String
   MmiddleName String
   MbirthDate  DateTime
-
 }
 
 model Schedule {
@@ -38,19 +37,6 @@ model Schedule {
   days        String
 
 }
-
-model Appointment {
-  id          Int      @id @default(autoincrement())
-  firstName   String
-  lastName    String
-  middleName  String?
-  medicId     Int
-  day         String
-  time        String
-  medic       Int
-}
-
-
 
 model Hospital {
   id          Int      @id @default(autoincrement())
@@ -65,6 +51,18 @@ model Hospital {
   htime       String
   phone       String
 }
+
+model Appointment {
+  id          Int      @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  middleName  String?
+  medicId     Int
+  day         String
+  time        String
+  medic       Int
+}
+
 
 model Records {
   id          Int     @id @default(autoincrement())

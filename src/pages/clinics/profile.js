@@ -614,8 +614,10 @@ export default function HospitalProfile() {
                                 </button>
                             </form>
                         </div>
-                    </div>
+                        <h2 className="text-3xl font-bold mb-5 mt-5 text-center">Сотрудники больницы</h2>
 
+                    </div>
+                    
                 ) : page === 3 ? (
                     <div className="grid grid-cols-4 gap-4 mt-20 text-gray-800">
                         <div className="bg-white p-6 rounded-lg col-span-3">
@@ -639,7 +641,7 @@ export default function HospitalProfile() {
                                 </div>
 
                                 <div className="mt-3">
-                                    <label className="block text-sm font-medium text-gray-700">Дни недели</label>
+                                <label className="block text-sm font-medium text-gray-700">Дни недели</label>
                                     <div className="flex space-x-4">
                                         {/* Кнопки для выбора дней недели */}
                                         {["Пон", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((day) => (
