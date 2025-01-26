@@ -20,6 +20,7 @@ export default async function handler(req, res) {
                 MmiddleName: true,
                 MbirthDate: true,
                 prof: true,
+                cid: true
             },
         });
 

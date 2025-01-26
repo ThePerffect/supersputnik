@@ -34,7 +34,22 @@ export default function HospitalProfile() {
     const [Mlastname, setMlastname] = useState("");
     const [Mmiddlename, setMmiddlename] = useState("");
     const [Mdata, setBirthDate] = useState("");
-
+    const [selectedMedic, setSelectedMedic] = useState(null);
+    const [workStartTime, setWorkStartTime] = useState('');
+    const [workEndTime, setWorkEndTime] = useState('');
+    const [schedule, setSchedule] = useState({
+        Пон: false,
+        Вт: false,
+        Ср: false,
+        Чт: false,
+        Пт: false,
+        Сб: false,
+        Вс: false
+    });
+    const [medicSchedules, setMedicSchedules] = useState([]);
+    const [workStart, setWorkStart] = useState('');
+    const [workEnd, setWorkEnd] = useState('');
+    const [workingDays, setWorkingDays] = useState([]);
     const [success, setSuccess] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -186,39 +201,89 @@ export default function HospitalProfile() {
 
 
 
+    const handleAddSchedule = () => {
+        if (!selectedMedic || !workStartTime || !workEndTime) {
+            return;
+        }
+
+        // Добавляем новое расписание для выбранного медика
+        const newSchedule = {
+            medicId: selectedMedic.id,
+            workStartTime,
+            workEndTime,
+            days: Object.keys(schedule).filter((day) => schedule[day]),
+        };
+
+        setMedicSchedules((prevSchedules) => [...prevSchedules, newSchedule]);
+
+        // Очистка формы
+        setWorkStartTime('');
+        setWorkEndTime('');
+        setSchedule({
+            Пон: false,
+            Вт: false,
+            Ср: false,
+            Чт: false,
+            Пт: false,
+            Сб: false,
+            Вс: false,
+        });
+    };
+
+
+    const toggleScheduleDay = (day) => {
+        setSchedule((prevSchedule) => ({
+            ...prevSchedule,
+            [day]: !prevSchedule[day]
+        }));
+    };
+
+    const handleMedicChange = (e) => {
+        const medicId = e.target.value;
+        const medic = medicList.find((med) => med.id === medicId); // Предположим, что medicList содержит всех медиков
+        setSelectedMedic(medic);
+    };
+
     const handleAddMedic = async () => {
         try {
+            if (!specialization || !Mdata || !Mmiddlename || !Mlastname || !Mname || !workStart || !workEnd || workingDays.length === 0) {
+                showNotification("Заполните все обязательные поля.", "error");
+                return;
+            }
+
             const response = await fetch('/api/clinic/AddMedic', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    id: id,
+                    id,
                     spec: specialization,
                     name: Mname,
                     lastname: Mlastname,
                     middlename: Mmiddlename,
                     date: Mdata,
+                    workStart,
+                    workEnd,
+                    workingDays,
                 }),
             });
 
             if (response.ok) {
                 const data = await response.json();
-                showNotification("Сотрудник добавлен", "success");
+                showNotification("Сотрудник добавлен успешно!", "success");
                 await fetchMedics();
             } else {
                 const error = await response.json();
                 console.error('Ошибка:', error.error || 'Неизвестная ошибка.');
-                showNotification("Произошла ошибка!", "error");
-
+                showNotification("Произошла ошибка при добавлении сотрудника.", "error");
             }
         } catch (err) {
-            console.error('Ошибка при добавлении:', err.message);
-            showNotification("Произошла ошибка!", "error");
-
+            console.error('Ошибка при добавлении сотрудника:', err.message);
+            showNotification("Произошла ошибка. Проверьте соединение и повторите попытку.", "error");
         }
     };
+
 
 
 
@@ -267,6 +332,21 @@ export default function HospitalProfile() {
                             <span className="ml-2 overflow-hidden transition-all duration-300">
                         Сотрудники
                     </span>
+                        </div>
+                    </a>
+                </div>
+                <div className="space-y-2 py-1 px-2">
+                    <a href="#" onClick={(e) => {
+                        e.preventDefault();
+                        setPage(3); // добавим новый номер страницы для расписания
+                    }}>
+                        <div
+                            className="flex items-center px-4 py-2 bg-white rounded-2xl hover:bg-gray-200 transition duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5"
+                                 stroke="currentColor" className="w-6 h-6">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 5v14m7-7H5"/>
+                            </svg>
+                            <span className="ml-2">Расписание</span>
                         </div>
                     </a>
                 </div>
@@ -425,10 +505,11 @@ export default function HospitalProfile() {
                         </form>
                     </div>
                 ) : page === 2 ? (
-                    <div className="grid grid-cols-4 ">
-                        <div className=" mt-20 col-span-2  bg-white p-6 rounded-lg ">
+                    <div className="grid grid-cols-4">
+                        <div className="mt-20 col-span-2 bg-white p-6 rounded-lg">
                             <h2 className="text-2xl font-semibold text-gray-700 mb-6">Добавить сотрудника</h2>
                             <form>
+                                {/* Имя */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700">Имя</label>
                                     <input
@@ -439,77 +520,200 @@ export default function HospitalProfile() {
                                     />
                                 </div>
 
-                                <div className='mt-3'>
+                                {/* Фамилия */}
+                                <div className="mt-3">
                                     <label className="block text-sm font-medium text-gray-700">Фамилия</label>
                                     <input
                                         type="text"
                                         placeholder="Введите фамилию"
                                         onChange={(e) => setMlastname(e.target.value)}
-
                                         className="mt-1 text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     />
                                 </div>
 
-
-                                <div className='mt-3'>
+                                {/* Отчество */}
+                                <div className="mt-3">
                                     <label className="block text-sm font-medium text-gray-700">Отчество</label>
                                     <input
                                         type="text"
                                         placeholder="Введите отчество"
                                         onChange={(e) => setMmiddlename(e.target.value)}
-
                                         className="mt-1 text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                     />
-                                    <div className='mt-3 text-gray-800'>
-                                        <InputField id="birthDate" label="Дата рождения" type="date"
-                                                    onChange={setBirthDate}/>
-                                    </div>
-                                    <div className='mt-3'>
-                                        <SpecializationInput onSpecializationChange={setSpecialization}/>
-                                        <p className="text-gray-400 text-sm mt-1">
-                                            Если отсутствует необходимая вам специализация, просто впишите её.
-                                        </p>
-                                    </div>
-
-                                    <button
-                                        type="button"
-                                        className="flex mt-3 justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
-                                        disabled={!specialization || !Mdata || !Mmiddlename || !Mlastname || !Mname}
-                                        onClick={handleAddMedic}
-                                    >
-                                        Добавить сотрудника
-                                    </button>
                                 </div>
-                            </form>
 
+                                {/* Дата рождения */}
+                                <div className="mt-3 text-gray-800">
+                                    <InputField
+                                        id="birthDate"
+                                        label="Дата рождения"
+                                        type="date"
+                                        onChange={setBirthDate}
+                                    />
+                                </div>
+
+                                {/* Специализация */}
+                                <div className="mt-3">
+                                    <SpecializationInput onSpecializationChange={setSpecialization}/>
+                                    <p className="text-gray-400 text-sm mt-1">
+                                        Если отсутствует необходимая вам специализация, просто впишите её.
+                                    </p>
+                                </div>
+
+                                {/* Время работы */}
+                                <div className="mt-3">
+                                    <label className="block text-sm font-medium text-gray-700">Время работы</label>
+                                    <div className="flex gap-4 mt-1">
+                                        <input
+                                            type="time"
+                                            onChange={(e) => setWorkStart(e.target.value)}
+                                            className="text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        />
+                                        <input
+                                            type="time"
+                                            onChange={(e) => setWorkEnd(e.target.value)}
+                                            className="text-gray-800 block w-full px-3 py-2 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Дни работы */}
+                                <div className="mt-3">
+                                    <label className="block text-sm font-medium text-gray-700">Рабочие дни</label>
+                                    <div className="flex flex-wrap gap-2 mt-2">
+                                        {["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((day) => (
+                                            <label key={day} className="flex items-center space-x-2">
+                                                <input
+                                                    type="checkbox"
+                                                    value={day}
+                                                    onChange={(e) =>
+                                                        setWorkingDays((prev) =>
+                                                            e.target.checked
+                                                                ? [...prev, e.target.value]
+                                                                : prev.filter((d) => d !== e.target.value)
+                                                        )
+                                                    }
+                                                    className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
+                                                />
+                                                <span className="text-gray-800">{day}</span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <p className="text-gray-500 text-sm mt-1">Выберите дни, в которые сотрудник будет
+                                        работать.</p>
+                                </div>
+
+
+                                <button
+                                    type="button"
+                                    className="flex mt-3 justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                                    disabled={!specialization || !Mdata || !Mmiddlename || !Mlastname || !Mname || !workStart || !workEnd || workingDays.length === 0}
+                                    onClick={handleAddMedic}
+                                >
+                                    Добавить сотрудника
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                ) : page === 3 ? (
+                    <div className="grid grid-cols-4 gap-4 mt-20 text-gray-800">
+                        <div className="bg-white p-6 rounded-lg col-span-3">
+                            <h2 className="text-2xl font-semibold text-gray-700 mb-6">Расписание сотрудников</h2>
+
+                            <form>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Выберите
+                                        сотрудника</label>
+                                    <select
+                                        onChange={(e) => setSelectedMedic(e.target.value)}
+                                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                    >
+                                        <option value="">Выберите сотрудника</option>
+                                        {medic && medic.length > 0 && medic.map((medicItem) => (
+                                            <option key={medicItem.id} value={medicItem.id}>
+                                                {medicItem.MfirstName} {medicItem.MlastName}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="mt-3">
+                                    <label className="block text-sm font-medium text-gray-700">Дни недели</label>
+                                    <div className="flex space-x-4">
+                                        {/* Кнопки для выбора дней недели */}
+                                        {["Пон", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"].map((day) => (
+                                            <button
+                                                type="button"
+                                                key={day}
+                                                className={`${
+                                                    schedule[day] ? 'bg-blue-500 text-white' : 'bg-white'
+                                                } p-2 rounded-md border border-gray-300 hover:bg-blue-100 transition`}
+                                                onClick={() => toggleScheduleDay(day)}
+                                            >
+                                                {day}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="mt-3">
+                                    <label className="block text-sm font-medium text-gray-700">Часы работы</label>
+                                    <div className="flex items-center space-x-2">
+                                        <input
+                                            type="time"
+                                            className="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                            value={workStartTime}
+                                            onChange={(e) => setWorkStartTime(e.target.value)}
+                                        />
+                                        <span className="text-gray-500">—</span>
+                                        <input
+                                            type="time"
+                                            className="w-24 p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                                            value={workEndTime}
+                                            onChange={(e) => setWorkEndTime(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <button
+                                    type="button"
+                                    className="mt-4 flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700"
+                                    onClick={handleAddSchedule}
+                                    disabled={!selectedMedic || !workStartTime || !workEndTime}
+                                >
+                                    Добавить расписание
+                                </button>
+                            </form>
                         </div>
 
-
-                        <div className="bg-white col-start-1 col-span-10 text-gray-800 p-8 rounded-lg w-[80%]">
-                            <h1 className="text-3xl font-semibold mb-6">Сотрудники</h1>
-
-                            {medic && medic.length > 0 ? (
-                                <div className="grid grid-cols-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                                    {medic.map((medicItem) => (
-                                        <div
-                                            className="p-4 border rounded-md shadow-sm bg-gray-50"
-                                        >
-                                            <p>
-                                                <strong>Имя:</strong> {medicItem.MlastName} {medicItem.MfirstName} {medicItem.MmiddleName || ''}
-                                            </p>
-                                            <p><strong>Специализация:</strong> {medicItem.prof}</p>
-                                            <p><strong>Дата
-                                                рождения:</strong> {new Date(medicItem.MbirthDate).toLocaleDateString()}
-                                            </p>
-                                        </div>
-                                    ))}
+                        <div className="bg-white p-6 rounded-lg col-span-1">
+                            <h3 className="text-xl font-semibold text-gray-700 mb-6">Расписание сотрудников</h3>
+                            {medicSchedules.length > 0 ? (
+                                <div className="overflow-x-auto">
+                                    <table className="table-auto w-full">
+                                        <thead>
+                                        <tr>
+                                        <th className="px-4 py-2 border-b">Сотрудник</th>
+                                            <th className="px-4 py-2 border-b">Дни</th>
+                                            <th className="px-4 py-2 border-b">Часы работы</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {medicSchedules.map((schedule) => (
+                                            <tr key={schedule.id}>
+                                                <td className="px-4 py-2 border-b">{schedule.medName}</td>
+                                                <td className="px-4 py-2 border-b">{schedule.days.join(', ')}</td>
+                                                <td className="px-4 py-2 border-b">{schedule.startTime} — {schedule.endTime}</td>
+                                            </tr>
+                                        ))}
+                                        </tbody>
+                                    </table>
                                 </div>
                             ) : (
-                                <p className="text-gray-500">Нет данных о сотрудниках.</p>
+                                <p className="text-gray-500">Нет расписаний для сотрудников.</p>
                             )}
                         </div>
-
-
                     </div>
                 ) : null}
             </div>

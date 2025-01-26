@@ -1,178 +1,137 @@
-'use client';
+import React, { useState } from 'react';
 
-import React, { useEffect, useState } from 'react';
-import { DayPilot, DayPilotMonth, DayPilotNavigator } from '@daypilot/daypilot-lite-react';
-import Modal from 'react-modal';
-import './toolbar.css';
-import prisma from '../../../../prisma/client'; // Импорт Prisma клиента
+const DateTimePickerModal = ({ open, onClose, busyDates, busyTimes, onSubmit }) => {
+    const [selectedDate, setSelectedDate] = useState('');
+    const [selectedTime, setSelectedTime] = useState('');
 
-Modal.setAppElement('#__next');
+    const isDateBusy = (date) => busyDates.includes(date);
+    const isTimeBusy = (time) => busyTimes.includes(time);
 
-export default function MedicsCalendar() {
-    const [calendar, setCalendar] = useState<DayPilot.Month>();
-    const [datePicker, setDatePicker] = useState<DayPilot.Navigator>();
-    const [events, setEvents] = useState<DayPilot.EventData[]>([]);
-    const [startDate, setStartDate] = useState<string | DayPilot.Date>('2025-11-01');
-    const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [currentEvent, setCurrentEvent] = useState<DayPilot.EventData | null>(null);
-
-    const fetchEvents = async () => {
-        // Получение данных из базы Prisma
-        const result = await prisma.medics.findMany({
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                middleName: true,
-                birthDate: true,
-                profession: true,
-            },
-        });
-
-        const mappedEvents = result.map((medic) => ({
-            id: medic.id,
-            text: `${medic.firstName} ${medic.lastName}`,
-            start: new Date(medic.birthDate).toISOString(),
-            end: new Date(medic.birthDate).toISOString(),
-            tags: {
-                profession: medic.profession,
-            },
-        }));
-
-        setEvents(mappedEvents);
-    };
-
-    const handleSaveEvent = async (eventData) => {
-        if (currentEvent) {
-            // Обновление события
-            await prisma.medics.update({
-                where: { id: currentEvent.id },
-                data: {
-                    firstName: eventData.firstName,
-                    lastName: eventData.lastName,
-                    middleName: eventData.middleName,
-                    profession: eventData.profession,
-                },
-            });
-        } else {
-            // Создание нового события
-            const newMedic = await prisma.medics.create({
-                data: {
-                    firstName: eventData.firstName,
-                    lastName: eventData.lastName,
-                    middleName: eventData.middleName,
-                    profession: eventData.profession,
-                    birthDate: new Date(eventData.birthDate),
-                },
-            });
-
-            // Добавление записи в таблицу
-            await prisma.records.create({
-                data: {
-                    medicId: newMedic.id,
-                    date: new Date(eventData.birthDate),
-                    description: `Запись создана для медика ${eventData.firstName} ${eventData.lastName}`,
-                },
-            });
-        }
-
-        await fetchEvents();
-        setModalIsOpen(false);
-    };
-
-    const handleDeleteEvent = async () => {
-        if (currentEvent) {
-            await prisma.medics.delete({ where: { id: currentEvent.id } });
-            await fetchEvents();
-            setModalIsOpen(false);
+    const handleSubmit = () => {
+        if (selectedDate && selectedTime) {
+            onSubmit({ date: selectedDate, time: selectedTime });
+            onClose();
         }
     };
 
-    useEffect(() => {
-        fetchEvents();
-        datePicker?.select('2025-11-01');
-    }, [calendar, datePicker]);
+    if (!open) return null;
 
     return (
-        <div style={{ display: 'flex' }}>
-            <div style={{ marginRight: '10px' }}>
-                <DayPilotNavigator
-                    selectMode={'Month'}
-                    showMonths={3}
-                    skipMonths={3}
-                    onTimeRangeSelected={(args) => setStartDate(args.start)}
-                    controlRef={setDatePicker}
-                />
-            </div>
-            <div style={{ flexGrow: '1' }}>
-                <div className={'toolbar'}>
-                    <button onClick={() => datePicker?.select(DayPilot.Date.today())}>Today</button>
-                </div>
-                <DayPilotMonth
-                    startDate={startDate}
-                    events={events}
-                    eventBorderRadius={'5px'}
-                    eventBarVisible={false}
-                    eventHeight={80}
-                    cellHeight={120}
-                    onEventClick={(args) => {
-                        setCurrentEvent(args.e.data);
-                        setModalIsOpen(true);
-                    }}
-                    controlRef={setCalendar}
-                />
-            </div>
-
-            {modalIsOpen && (
-                <Modal
-                    isOpen={modalIsOpen}
-                    onRequestClose={() => setModalIsOpen(false)}
-                    contentLabel="Edit Medic Event"
-                >
-                    <h2>{currentEvent ? 'Edit Medic' : 'New Medic'}</h2>
-                    <form
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            const formData = new FormData(e.target);
-                            handleSaveEvent(Object.fromEntries(formData));
-                        }}
-                    >
-                        <label>First Name:</label>
+        <div style={styles.overlay}>
+            <div style={styles.modal}>
+                <h2 style={styles.title}>Выберите дату и время</h2>
+                <div style={styles.content}>
+                    <label style={styles.label}>
+                        Дата:
                         <input
-                            name="firstName"
-                            defaultValue={currentEvent?.tags?.firstName || ''}
-                            required
-                        />
-                        <label>Last Name:</label>
-                        <input
-                            name="lastName"
-                            defaultValue={currentEvent?.tags?.lastName || ''}
-                            required
-                        />
-                        <label>Middle Name:</label>
-                        <input
-                            name="middleName"
-                            defaultValue={currentEvent?.tags?.middleName || ''}
-                        />
-                        <label>Profession:</label>
-                        <input
-                            name="profession"
-                            defaultValue={currentEvent?.tags?.profession || ''}
-                            required
-                        />
-                        <label>Birth Date:</label>
-                        <input
-                            name="birthDate"
                             type="date"
-                            defaultValue={currentEvent?.start?.split('T')[0] || ''}
-                            required
+                            value={selectedDate}
+                            onChange={(e) => setSelectedDate(e.target.value)}
+                            min={new Date().toISOString().split('T')[0]} // минимальная дата — сегодня
+                            style={styles.input}
                         />
-                        <button type="submit">Save</button>
-                        {currentEvent && <button type="button" onClick={handleDeleteEvent}>Delete</button>}
-                        <button type="button" onClick={() => setModalIsOpen(false)}>Cancel</button>
-                    </form>
-                </Modal>
-            )}
+                        {isDateBusy(selectedDate) && (
+                            <span style={styles.error}>Эта дата недоступна</span>
+                        )}
+                    </label>
+                    <label style={styles.label}>
+                        Время:
+                        <input
+                            type="time"
+                            value={selectedTime}
+                            onChange={(e) => setSelectedTime(e.target.value)}
+                            disabled={!selectedDate || isDateBusy(selectedDate)}
+                            style={styles.input}
+                        />
+                        {isTimeBusy(selectedTime) && (
+                            <span style={styles.error}>Это время недоступно</span>
+                        )}
+                    </label>
+                </div>
+                <div style={styles.actions}>
+                    <button onClick={onClose} style={styles.button}>
+                        Отмена
+                    </button>
+                    <button
+                        onClick={handleSubmit}
+                        style={{ ...styles.button, ...styles.submitButton }}
+                        disabled={!selectedDate || !selectedTime || isDateBusy(selectedDate) || isTimeBusy(selectedTime)}
+                    >
+                        Подтвердить
+                    </button>
+                </div>
+            </div>
         </div>
     );
-}
+};
+
+const styles = {
+    overlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 1000,
+    },
+    modal: {
+        backgroundColor: 'white',
+        borderRadius: '8px',
+        width: '400px',
+        maxWidth: '90%',
+        padding: '20px',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+    },
+    title: {
+        margin: '0 0 20px 0',
+        fontSize: '20px',
+        fontWeight: 'bold',
+        textAlign: 'center',
+    },
+    content: {
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '15px',
+    },
+    label: {
+        display: 'flex',
+        flexDirection: 'column',
+        fontSize: '14px',
+        fontWeight: 'bold',
+    },
+    input: {
+        marginTop: '5px',
+        padding: '8px',
+        fontSize: '14px',
+        borderRadius: '4px',
+        border: '1px solid #ccc',
+    },
+    error: {
+        marginTop: '5px',
+        fontSize: '12px',
+        color: 'red',
+    },
+    actions: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        gap: '10px',
+        marginTop: '20px',
+    },
+    button: {
+        padding: '8px 16px',
+        fontSize: '14px',
+        borderRadius: '4px',
+        border: 'none',
+        cursor: 'pointer',
+    },
+    submitButton: {
+        backgroundColor: '#007BFF',
+        color: 'white',
+    },
+};
+
+export default DateTimePickerModal;
